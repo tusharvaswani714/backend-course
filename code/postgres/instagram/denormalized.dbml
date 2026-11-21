@@ -1,0 +1,64 @@
+Table users {
+  id bigint [pk, increment]
+  username varchar(30) [not null, unique]
+  email varchar(255) [not null, unique]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table follows {
+  follower_id bigint [not null]
+  followed_id bigint [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (follower_id, followed_id) [pk]
+  }
+}
+
+Table posts {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  caption text
+  like_count int [not null, default: 0]
+  photos jsonb [not null]
+  hashtags text[] [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'photos is set once when the post is created and is read with every post, so it lives here instead of in a table. hashtags is kept here for reads, and in post_hashtags for search. like_count is updated on every like and unlike, so one read shows the count.'
+}
+
+Table comments {
+  id bigint [pk, increment]
+  post_id bigint [not null]
+  user_id bigint [not null]
+  body text [not null]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table likes {
+  user_id bigint [not null]
+  post_id bigint [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (user_id, post_id) [pk]
+  }
+}
+
+Table post_hashtags {
+  post_id bigint [not null]
+  hashtag varchar(100) [not null]
+
+  indexes {
+    (post_id, hashtag) [pk]
+  }
+}
+
+Ref: follows.follower_id > users.id
+Ref: follows.followed_id > users.id
+Ref: posts.user_id > users.id
+Ref: comments.post_id > posts.id
+Ref: comments.user_id > users.id
+Ref: likes.user_id > users.id
+Ref: likes.post_id > posts.id
+Ref: post_hashtags.post_id > posts.id

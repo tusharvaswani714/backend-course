@@ -1,0 +1,67 @@
+Table users {
+  id bigint [pk, increment]
+  username varchar(30) [not null, unique]
+  email varchar(255) [not null, unique]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table follows {
+  follower_id bigint [not null]
+  followed_id bigint [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (follower_id, followed_id) [pk]
+  }
+}
+
+Table posts {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  caption text
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table post_photos {
+  id bigint [pk, increment]
+  post_id bigint [not null]
+  url text [not null]
+  position int [not null]
+}
+
+Table comments {
+  id bigint [pk, increment]
+  post_id bigint [not null]
+  user_id bigint [not null]
+  body text [not null]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table likes {
+  user_id bigint [not null]
+  post_id bigint [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (user_id, post_id) [pk]
+  }
+}
+
+Table post_hashtags {
+  post_id bigint [not null]
+  hashtag varchar(100) [not null]
+
+  indexes {
+    (post_id, hashtag) [pk]
+  }
+}
+
+Ref: follows.follower_id > users.id
+Ref: follows.followed_id > users.id
+Ref: posts.user_id > users.id
+Ref: post_photos.post_id > posts.id
+Ref: comments.post_id > posts.id
+Ref: comments.user_id > users.id
+Ref: likes.user_id > users.id
+Ref: likes.post_id > posts.id
+Ref: post_hashtags.post_id > posts.id
